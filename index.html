@@ -50,10 +50,9 @@
       <div class="card p-4 mx-auto" style="max-width: 600px">
         <h2>🏦 Society Interest Calculator</h2>
         <form id="interestForm">
+          <!-- Principal Amount -->
           <div class="mb-3">
-            <label for="principal" class="form-label"
-              >Principal Amount (₹)</label
-            >
+            <label for="principal" class="form-label">Principal Amount (₹)</label>
             <input
               type="number"
               class="form-control"
@@ -63,10 +62,20 @@
             />
           </div>
 
+          <!-- Actual Disbursed Date -->
           <div class="mb-3">
-            <label for="paymentDate" class="form-label"
-              >Actual Payment Date</label
-            >
+            <label for="disbursedDate" class="form-label">Actual Disbursed Date (Loan Start Date)</label>
+            <input
+              type="date"
+              class="form-control"
+              id="disbursedDate"
+              required
+            />
+          </div>
+
+          <!-- Actual Payment Date -->
+          <div class="mb-3">
+            <label for="paymentDate" class="form-label">Actual Payment Date</label>
             <input type="date" class="form-control" id="paymentDate" required />
           </div>
 
@@ -89,19 +98,18 @@
         .addEventListener("submit", function (event) {
           event.preventDefault();
 
-          const principal = parseFloat(
-            document.getElementById("principal").value
-          );
+          const principal = parseFloat(document.getElementById("principal").value);
+          const disbursedDateInput = document.getElementById("disbursedDate").value;
           const paymentDateInput = document.getElementById("paymentDate").value;
 
-          if (!paymentDateInput || isNaN(principal) || principal <= 0) {
+          if (!disbursedDateInput || !paymentDateInput || isNaN(principal) || principal <= 0) {
             alert("Please enter valid values.");
             return;
           }
 
+          const disbursedDate = new Date(disbursedDateInput);
           const paymentDate = new Date(paymentDateInput);
-          const startDate = new Date("2025-04-01");
-          const dueDate = new Date("2026-03-31");
+          const dueDate = new Date("2026-06-30"); // Society's due date
 
           const normalRate = principal <= 300000 ? 6.0 : 10.0;
           const penaltyRate = 11.0;
@@ -109,21 +117,17 @@
           let normalInterest = 0;
           let penaltyInterest = 0;
 
-          const daysBetween = (d1, d2) =>
-            Math.floor((d2 - d1) / (1000 * 60 * 60 * 24));
+          const daysBetween = (d1, d2) => Math.floor((d2 - d1) / (1000 * 60 * 60 * 24));
 
           // Case 1: Paid on or before due date
           if (paymentDate <= dueDate) {
-            const normalDays = daysBetween(startDate, paymentDate);
+            const normalDays = daysBetween(disbursedDate, paymentDate);
             const timeInYears = normalDays / 365;
             normalInterest = (principal * normalRate * timeInYears) / 100;
           } else {
             // Case 2: Paid after due date
-            const normalDays = daysBetween(startDate, dueDate);
-            const delayDays = daysBetween(
-              new Date(dueDate.getTime() + 86400000),
-              paymentDate
-            );
+            const normalDays = daysBetween(disbursedDate, dueDate);
+            const delayDays = daysBetween(new Date(dueDate.getTime() + 86400000), paymentDate);
 
             const normalTime = normalDays / 365;
             const delayTime = delayDays / 365;
@@ -138,21 +142,19 @@
           const resultDiv = document.getElementById("result");
           resultDiv.style.display = "block";
           resultDiv.innerHTML = `
-        <h5>📅 Interest Calculation Summary</h5>
-        <p><strong>Start Date:</strong> ${
-          startDate.toISOString().split("T")[0]
-        }</p>
-        <p><strong>Due Date:</strong> ${dueDate.toISOString().split("T")[0]}</p>
-        <p><strong>Payment Date:</strong> ${paymentDateInput}</p>
-        <p><strong>Principal:</strong> ₹${principal.toFixed(2)}</p>
-        <p><strong>Normal Rate:</strong> ${normalRate}% per annum</p>
-        <p><strong>Penalty Rate (after due date):</strong> ${penaltyRate}% per annum</p>
-        <hr>
-        <p><strong>Normal Interest:</strong> ₹${normalInterest.toFixed(2)}</p>
-        <p><strong>Penalty Interest:</strong> ₹${penaltyInterest.toFixed(2)}</p>
-        <p><strong>Total Interest:</strong> ₹${totalInterest.toFixed(2)}</p>
-        <p><strong>Total Amount Payable:</strong> ₹${totalAmount.toFixed(2)}</p>
-      `;
+            <h5>📅 Interest Calculation Summary</h5>
+            <p><strong>Loan Start Date (Disbursed):</strong> ${disbursedDateInput}</p>
+            <p><strong>Due Date:</strong> ${dueDate.toISOString().split("T")[0]}</p>
+            <p><strong>Payment Date:</strong> ${paymentDateInput}</p>
+            <p><strong>Principal:</strong> ₹${principal.toFixed(2)}</p>
+            <p><strong>Normal Rate:</strong> ${normalRate}% per annum</p>
+            <p><strong>Penalty Rate (after due date):</strong> ${penaltyRate}% per annum</p>
+            <hr>
+            <p><strong>Normal Interest:</strong> ₹${normalInterest.toFixed(2)}</p>
+            <p><strong>Penalty Interest:</strong> ₹${penaltyInterest.toFixed(2)}</p>
+            <p><strong>Total Interest:</strong> ₹${totalInterest.toFixed(2)}</p>
+            <p><strong>Total Amount Payable:</strong> ₹${totalAmount.toFixed(2)}</p>
+          `;
         });
     </script>
   </body>
