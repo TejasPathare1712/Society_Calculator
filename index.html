@@ -36,6 +36,13 @@
         margin-top: 20px;
       }
 
+      .amount-words {
+        font-size: 0.9rem;
+        color: #555;
+        margin-top: 5px;
+        font-style: italic;
+      }
+
       footer {
         text-align: center;
         padding: 15px;
@@ -60,11 +67,14 @@
               placeholder="Enter amount"
               required
             />
+            <div id="amountWords" class="amount-words"></div>
           </div>
 
           <!-- Actual Disbursed Date -->
           <div class="mb-3">
-            <label for="disbursedDate" class="form-label">Actual Disbursed Date (Loan Start Date)</label>
+            <label for="disbursedDate" class="form-label">
+              Actual Disbursed Date (Loan Start Date)
+            </label>
             <input
               type="date"
               class="form-control"
@@ -93,6 +103,95 @@
     </footer>
 
     <script>
+      // Convert number to words (Indian numbering system)
+      function numberToWords(num) {
+        const ones = [
+          "",
+          "One",
+          "Two",
+          "Three",
+          "Four",
+          "Five",
+          "Six",
+          "Seven",
+          "Eight",
+          "Nine",
+          "Ten",
+          "Eleven",
+          "Twelve",
+          "Thirteen",
+          "Fourteen",
+          "Fifteen",
+          "Sixteen",
+          "Seventeen",
+          "Eighteen",
+          "Nineteen",
+        ];
+        const tens = [
+          "",
+          "",
+          "Twenty",
+          "Thirty",
+          "Forty",
+          "Fifty",
+          "Sixty",
+          "Seventy",
+          "Eighty",
+          "Ninety",
+        ];
+
+        if (num === 0) return "Zero";
+
+        function getWords(n) {
+          let str = "";
+
+          if (n > 19) {
+            str += tens[Math.floor(n / 10)] + " " + ones[n % 10];
+          } else {
+            str += ones[n];
+          }
+
+          return str.trim();
+        }
+
+        function convertToWords(n) {
+          let output = "";
+
+          if (n >= 10000000) {
+            output += convertToWords(Math.floor(n / 10000000)) + " Crore ";
+            n %= 10000000;
+          }
+          if (n >= 100000) {
+            output += convertToWords(Math.floor(n / 100000)) + " Lakh ";
+            n %= 100000;
+          }
+          if (n >= 1000) {
+            output += convertToWords(Math.floor(n / 1000)) + " Thousand ";
+            n %= 1000;
+          }
+          if (n >= 100) {
+            output += convertToWords(Math.floor(n / 100)) + " Hundred ";
+            n %= 100;
+          }
+
+          if (n > 0) output += getWords(n);
+
+          return output.trim();
+        }
+
+        return convertToWords(num) + " Rupees Only";
+      }
+
+      // Update amount in words dynamically
+      document.getElementById("principal").addEventListener("input", function () {
+        const amount = parseInt(this.value);
+        const wordsDiv = document.getElementById("amountWords");
+        wordsDiv.textContent = amount
+          ? numberToWords(amount)
+          : "";
+      });
+
+      // Interest calculation logic
       document
         .getElementById("interestForm")
         .addEventListener("submit", function (event) {
@@ -147,6 +246,7 @@
             <p><strong>Due Date:</strong> ${dueDate.toISOString().split("T")[0]}</p>
             <p><strong>Payment Date:</strong> ${paymentDateInput}</p>
             <p><strong>Principal:</strong> ₹${principal.toFixed(2)}</p>
+            <p><strong>Principal (in words):</strong> ${numberToWords(principal)}</p>
             <p><strong>Normal Rate:</strong> ${normalRate}% per annum</p>
             <p><strong>Penalty Rate (after due date):</strong> ${penaltyRate}% per annum</p>
             <hr>
